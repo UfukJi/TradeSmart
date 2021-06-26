@@ -4,7 +4,7 @@ from numpy import linalg as la
 import plotly.graph_objs as go
 from numpy.lib import math
 from scipy.signal import argrelextrema
-
+import tkinter
 import Indicators
 from Binance import Binance
 from Plotter import *
@@ -13,6 +13,7 @@ from tkinter import *
 from threading import Thread
 import requests
 from math import *
+
 
 stopDrawing = False
 
@@ -118,7 +119,7 @@ def FindTrends(
 
                     # length of trend
                     line_length = np.sqrt(
-                        (point2[0] - point1[0]) ** 2 + (point2[1] - point1[1]) ** 2
+                        (point2[0] - point1[0]) * 2 + (point2[1] - point1[1]) * 2
                     )
 
                     # now we're checking the points along the way
@@ -224,7 +225,7 @@ def FindTrends(
 
                     # length of trend
                     line_length = np.sqrt(
-                        (point2[0] - point1[0]) ** 2 + (point2[1] - point1[1]) ** 2
+                        (point2[0] - point1[0]) * 2 + (point2[1] - point1[1]) * 2
                     )
 
                     # now we're checking the points along the way
@@ -442,31 +443,40 @@ def calcOBV(df):
     return OBV
 
 
-def drawTrendForAllSymbols():
+def drawTrendForAllSymbols(choice):
     exchange = Binance("credentials.txt")
     symbols = exchange.GetTradingSymbols(quoteAssets=["USDT"])
     i = 0
 
+
     while i < len(symbols):
-        df = exchange.GetSymbolKlines(symbols[i], "1h", 1000)
-        sslow = Indicators.rsi(df)
-        lines = FindTrends(sslow, distance_factor=0.002, n=3)
+        df = exchange.GetSymbolKlines(symbols[i], "1h",500)
+        indicator = []
+        if choice == "S-SLOW":
+            indicator = Indicators.s_slow(df)
+        elif choice == "ACC":
+            indicator = Indicators.acc_dist(df)
+        elif choice == "OBV":
+            indicator = Indicators.on_balance_volume(df)
+        elif choice == "PVI":
+            indicator = Indicators.positive_volume_index(df)
+        elif choice == "RSI":
+            indicator = Indicators.rsi(df)
+        elif choice == "WAD":
+            indicator = Indicators.williams_ad(df)
+        elif choice == "VPT":
+            indicator = Indicators.volume_price_trend(df)
+
+        lines = FindTrends(indicator, distance_factor=0.002, n=3)
         print(lines)
         print(symbols[i])
         if lines:
-            PlotData(sslow, trends=lines, plot_title=symbols[i] + " trends")
-            if stopDrawing:
-                stop()
+            PlotData(indicator, trends=lines, plot_title=symbols[i] + " trends")
+
         i += 1
 
         if i == len(symbols)-1:
             print("process is finished")
-
-
-
-
-def showMsg():
-    drawTrendForAllSymbols()
 
 
 def stop():
@@ -479,9 +489,17 @@ def Main():
     tkWindow.geometry('400x150')
     tkWindow.title('V1')
 
+    options_list = ["ACC", "OBV", "PVI", "RSI", "S-SLOW", "WAD", "VPT"]
+    value_inside = tkinter.StringVar(tkWindow)
+    value_inside.set("Select an Option")
+
+    question_menu = tkinter.OptionMenu(tkWindow, value_inside, *options_list)
+    question_menu.pack()
+
+
     button = Button(tkWindow,
                     text='Submit',
-                    command=showMsg)
+                    command= lambda: drawTrendForAllSymbols(value_inside.get()))
     button.pack()
 
     tkWindow.mainloop()
