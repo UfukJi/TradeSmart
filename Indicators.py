@@ -2,6 +2,14 @@
 from tti.indicators import RelativeMomentumIndex
 import pandas as pd
 from Binance import Binance
+import jhtalib
+
+def imi(data):
+    data = pd.DataFrame(jhtalib.IMI(df, open="open", close="close"), columns=["close"])
+    data["time"] = df["time"]
+    data["date"] = df["date"]
+    return data
+
 
 def on_balance_volume(data, trend_periods=21, close_col='close', vol_col='volume'):
     for index, row in data.iterrows():
