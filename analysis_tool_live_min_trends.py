@@ -1,17 +1,12 @@
 import numpy as np
 import pandas as pd
 from numpy import linalg as la
-import plotly.graph_objs as go
-from numpy.lib import math
 from scipy.signal import argrelextrema
 import tkinter
 import Indicators
 from Binance import Binance
 from Plotter import *
-from pandas import DataFrame
 from tkinter import *
-from threading import Thread
-import requests
 from math import *
 
 stopDrawing = False
@@ -335,8 +330,7 @@ def FindTrends(
                             }
                         )
 
-    # print("\nAll Trends for "+model.symbol)
-    # print(len(trends))
+
 
     # Remove redundant trends
     removeTrends = []
@@ -366,9 +360,6 @@ def FindTrends(
                 xp = v1[0] * v2[1] - v1[1] * v2[0]  # Cross product
 
                 if xp < 0.0004 * priceRange and xp > -0.0004 * priceRange:
-                    # print("p1: Trends are close to each other!")
-                    # print(str(trend1['p1']) + " " + str(trend1['p2']))
-                    # print(str(trend2['p1']) + " " + str(trend2['p2']))
                     if trend1["length"] > trend2["length"]:
                         removeTrends.append(trend2)
                         # trends.remove(trend2)
@@ -390,9 +381,6 @@ def FindTrends(
                 xp = v1[0] * v2[1] - v1[1] * v2[0]  # Cross product
 
                 if xp < 0.0004 * priceRange and xp > -0.0004 * priceRange:
-                    # print("p2: Trends are close to each other!")
-                    # print(str(trend1['p1']) + " " + str(trend1['p2']))
-                    # print(str(trend2['p1']) + " " + str(trend2['p2']))
                     if trend1["length"] > trend2["length"]:
                         removeTrends.append(trend2)
                         # trends.remove(trend2)
@@ -415,8 +403,6 @@ def FindTrends(
     lineEqs = []
 
     for trend in trends:
-        # If trend has more than 2 validations, plot the line covering the entire chart
-        print("If trend has more than 2 validations, plot the line covering the entire chart")
         if extend_lines and trend["validations"] > 3:
 
             # Find the line equation
@@ -474,33 +460,34 @@ def calcOBV(df):
     return OBV
 
 
-def drawTrendForAllSymbols(choice):
+def drawTrendForAllSymbols(Ind_choice, Int_choice):
     exchange = Binance("credentials.txt")
     symbols = exchange.GetTradingSymbols(quoteAssets=["USDT"])
     i = 0
 
+    print(Ind_choice, Int_choice)
+
     while i < len(symbols):
-        df = exchange.GetSymbolKlines(symbols[i], "1h", 500)
+        df = exchange.GetSymbolKlines(symbols[i], Int_choice, 500)
         indicator = []
-        if choice == "S-SLOW":
+        if Ind_choice == "S-SLOW":
             indicator = Indicators.s_slow(df)
-        elif choice == "ACC":
+        elif Ind_choice == "ACC":
             indicator = Indicators.acc_dist(df)
-        elif choice == "OBV":
+        elif Ind_choice == "OBV":
             indicator = Indicators.on_balance_volume(df)
-        elif choice == "PVI":
+        elif Ind_choice == "PVI":
             indicator = Indicators.positive_volume_index(df)
-        elif choice == "RSI":
+        elif Ind_choice == "RSI":
             indicator = Indicators.rsi(df)
-        elif choice == "IMI":
+        elif Ind_choice == "IMI":
             indicator = Indicators.imi(df)
-        elif choice == "WAD":
+        elif Ind_choice == "WAD":
             indicator = Indicators.williams_ad(df)
-        elif choice == "VPT":
+        elif Ind_choice == "VPT":
             indicator = Indicators.volume_price_trend(df)
 
-        lines = FindTrends(indicator, distance_factor=0.002, n=3)
-        print(lines)
+        lines = FindTrends(indicator, distance_factor=0.001, n=3)
         print(symbols[i])
         if lines:
             PlotData(indicator, trends=lines, plot_title=symbols[i] + " trends")
@@ -521,16 +508,21 @@ def Main():
     tkWindow.geometry('400x150')
     tkWindow.title('V1')
 
-    options_list = ["ACC", "OBV", "PVI", "RSI", "S-SLOW", "WAD", "VPT","IMI"]
-    value_inside = tkinter.StringVar(tkWindow)
-    value_inside.set("Select an Option")
+    ind_options_list = ["ACC", "OBV", "PVI", "RSI", "S-SLOW", "WAD", "VPT","IMI"]
+    int_options_list = ["1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "8h", "12h", "1d", "3d", "1w", "1M"]
+    value_inside_ind = tkinter.StringVar(tkWindow)
+    value_inside_ind.set("Select an Indicator")
+    value_inside_int = tkinter.StringVar(tkWindow)
+    value_inside_int.set("Select an Interval")
 
-    question_menu = tkinter.OptionMenu(tkWindow, value_inside, *options_list)
+    question_menu = tkinter.OptionMenu(tkWindow, value_inside_ind, *ind_options_list)
+    question_menu.pack()
+    question_menu = tkinter.OptionMenu(tkWindow, value_inside_int, *int_options_list)
     question_menu.pack()
 
     button = Button(tkWindow,
                     text='Submit',
-                    command=lambda: drawTrendForAllSymbols(value_inside.get()))
+                    command=lambda: drawTrendForAllSymbols(value_inside_ind.get(), value_inside_int.get()))
     button.pack()
 
     tkWindow.mainloop()
