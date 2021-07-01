@@ -14,7 +14,6 @@ from threading import Thread
 import requests
 from math import *
 
-
 stopDrawing = False
 
 
@@ -181,11 +180,7 @@ def FindTrends(
                                 if beta < alfa:
                                     trendPoints = []
 
-
-
-
                     if len(trendPoints) > 0:
-
                         trends.append(
                             {
                                 "direction": "up",
@@ -310,7 +305,10 @@ def FindTrends(
 
     # Remove redundant trends
     removeTrends = []
-    priceRange = df["max"].max() / df["min"].min()
+    if not df["min"].min() == 0:
+        priceRange = df["max"].max() / df["min"].min()
+    else:
+        priceRange = inf
 
     # Loop through trends twice
     for trend1 in trends:
@@ -381,8 +379,6 @@ def FindTrends(
     # Also save line equations
     lineEqs = []
 
-
-
     for trend in trends:
         # If trend has more than 2 validations, plot the line covering the entire chart
         print("If trend has more than 2 validations, plot the line covering the entire chart")
@@ -448,9 +444,8 @@ def drawTrendForAllSymbols(choice):
     symbols = exchange.GetTradingSymbols(quoteAssets=["USDT"])
     i = 0
 
-
     while i < len(symbols):
-        df = exchange.GetSymbolKlines(symbols[i], "1h",500)
+        df = exchange.GetSymbolKlines(symbols[i], "1h", 500)
         indicator = []
         if choice == "S-SLOW":
             indicator = Indicators.s_slow(df)
@@ -475,7 +470,7 @@ def drawTrendForAllSymbols(choice):
 
         i += 1
 
-        if i == len(symbols)-1:
+        if i == len(symbols) - 1:
             print("process is finished")
 
 
@@ -496,10 +491,9 @@ def Main():
     question_menu = tkinter.OptionMenu(tkWindow, value_inside, *options_list)
     question_menu.pack()
 
-
     button = Button(tkWindow,
                     text='Submit',
-                    command= lambda: drawTrendForAllSymbols(value_inside.get()))
+                    command=lambda: drawTrendForAllSymbols(value_inside.get()))
     button.pack()
 
     tkWindow.mainloop()
