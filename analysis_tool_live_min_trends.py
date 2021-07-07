@@ -154,7 +154,7 @@ def FindTrends(
                                         "xp": xp,
                                     }
                                 )
-                    for i5 in range(i1 + 1, i2):
+                    for i5 in range(i3 + 1, i2):
                         if not pd.isna(df.iloc[i5, :]["min"]):
                             p5 = df.iloc[i5, :]
                             if p5["min"] < p1["min"]:
@@ -291,6 +291,42 @@ def FindTrends(
                                         "xp": xp,
                                     }
                                 )
+                    for i5 in range(i3 + 1, i2):
+                        if not pd.isna(df.iloc[i5, :]["max"]):
+                            p5 = df.iloc[i5, :]
+                            if p5["max"] > p1["max"]:
+                                # if one value between the two points is smaller
+                                # than the first point, the trend has been broken
+                                trendPoints = []
+                                break
+
+                            p5max = p5["max"] * 10 ** f
+                            p5time = p5["time"] * 10 ** tf
+                            point5 = np.asarray((p5time, p5max))
+                            d = la.norm(
+                                np.cross(point2 - point1, point1 - point5)
+                            ) / la.norm(point2 - point1)
+
+                            v1 = (point2[0] - point1[0], point2[1] - point1[1])
+                            v2 = (point5[0] - point1[0], point5[1] - point1[1])
+                            xp = v1[0] * v2[1] - v1[1] * v2[0]  # Cross product
+
+                            if xp < -0.0003 * distance_factor:
+                                trendPoints = []
+                                break
+
+                            if d < 0.0006 * distance_factor:
+                                trendPoints.append(
+                                    {
+                                        "x": p5["time"],
+                                        "y": p5["max"],
+                                        "x_norm": p5time,
+                                        "y_norm": p5min,
+                                        "dist": d,
+                                        "xp": xp,
+                                    }
+                                )
+
                     for i4, p4 in dfMin.iterrows():
                         if i4 > i2:
 
@@ -445,19 +481,7 @@ def FindTrends(
     return lines
 
 
-def calcOBV(df):
-    OBV = []
-    OBV.append(0)
 
-    for i in range(1, len(df.close)):
-        if df.close[i] > df.close[i - 1]:
-            OBV.append(OBV[-1] + df.volume[i])
-        elif df.close[i] < df.close[i - 1]:
-            OBV.append(OBV[-1] - df.volume[i])
-        else:
-            OBV.append(OBV[-1])
-
-    return OBV
 
 
 def drawTrendForAllSymbols(Ind_choice, Int_choice):
