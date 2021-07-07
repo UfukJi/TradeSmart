@@ -7,10 +7,6 @@ import pandas as pd
 import hashlib
 from decimal import Decimal
 
-# I will show you how exactly to get these API Keys
-# But first, let's update our function that gets the candlestick data
-# to get more than just the limit of 1000 candles. It will be useful
-# in case we want to backtest our strategies over a longer period
 
 request_delay = 1000
 
@@ -124,22 +120,17 @@ class Binance:
         return symbols_list
 
     def GetSymbolKlinesExtra(self, symbol: str, interval: str, limit: int = 1000, end_time=False):
-        # Basicall, we will be calling the GetSymbolKlines as many times as we need
-        # in order to get all the historical data required (based on the limit parameter)
-        # and we'll be merging the results into one long dataframe.
-
+       
         repeat_rounds = 0
         if limit > 1000:
             repeat_rounds = int(limit / 1000)
         initial_limit = limit % 1000
         if initial_limit == 0:
             initial_limit = 1000
-        # First, we get the last initial_limit candles, starting at end_time and going
-        # backwards (or starting in the present moment, if end_time is False)
+       
         df = self.GetSymbolKlines(symbol, interval, limit=initial_limit, end_time=end_time)
         while repeat_rounds > 0:
-            # Then, for every other 1000 candles, we get them, but starting at the beginning
-            # of the previously received candles.
+         
             df2 = self.GetSymbolKlines(symbol, interval, limit=1000, end_time=df['time'][0])
             df = df2.append(df, ignore_index=True)
             repeat_rounds = repeat_rounds - 1
