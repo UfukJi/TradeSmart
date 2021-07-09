@@ -8,6 +8,7 @@ from Binance import Binance
 from Plotter import *
 from tkinter import *
 from math import *
+from tkinter import ttk
 
 stopDrawing = False
 
@@ -522,6 +523,37 @@ def drawTrendForAllSymbols(Ind_choice, Int_choice):
             print("process is finished")
 
 
+def drawTrendForSymbols(Ind_choice, Int_choice,coin_choise):
+    exchange = Binance("credentials.txt")
+    df = exchange.GetSymbolKlines(coin_choise, Int_choice, 500)
+    indicator = []
+    if Ind_choice == "S-SLOW":
+        indicator = Indicators.s_slow(df)
+    elif Ind_choice == "ACC":
+        indicator = Indicators.acc_dist(df)
+    elif Ind_choice == "OBV":
+        indicator = Indicators.on_balance_volume(df)
+    elif Ind_choice == "PVI":
+        indicator = Indicators.positive_volume_index(df)
+    elif Ind_choice == "RSI":
+        indicator = Indicators.rsi(df)
+    elif Ind_choice == "IMI":
+        indicator = Indicators.imi(df)
+    elif Ind_choice == "WAD":
+        indicator = Indicators.williams_ad(df)
+    elif Ind_choice == "VPT":
+        indicator = Indicators.volume_price_trend(df)
+
+    lines = FindTrends(indicator, distance_factor=0.001, n=3)
+    print(coin_choise)
+
+    PlotData(indicator, trends=lines, plot_title=coin_choise + " trends")
+
+
+
+
+
+
 def stop():
     stopDrawing = True
 
@@ -534,6 +566,20 @@ def Main():
 
     ind_options_list = ["ACC", "OBV", "PVI", "RSI", "S-SLOW", "WAD", "VPT","IMI"]
     int_options_list = ["1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "8h", "12h", "1d", "3d", "1w", "1M"]
+    symbol = Indicators.exchange.GetTradingSymbols(quoteAssets=["USDT"])
+
+    n = tkinter.StringVar()
+    coinchosen = ttk.Combobox(tkWindow, textvariable=n)
+
+    # Adding combobox drop down list
+    coinchosen['values'] = symbol
+
+
+    coinchosen.current()
+
+    coinchosen.pack()
+
+
     value_inside_ind = tkinter.StringVar(tkWindow)
     value_inside_ind.set("Select an Indicator")
     value_inside_int = tkinter.StringVar(tkWindow)
@@ -544,10 +590,14 @@ def Main():
     question_menu = tkinter.OptionMenu(tkWindow, value_inside_int, *int_options_list)
     question_menu.pack()
 
-    button = Button(tkWindow,
-                    text='Submit',
+    button1 = Button(tkWindow,
+                    text='Submit all Symbols',
                     command=lambda: drawTrendForAllSymbols(value_inside_ind.get(), value_inside_int.get()))
-    button.pack()
+    button2 = Button(tkWindow,
+                    text='Submit Symbol',
+                    command=lambda: drawTrendForSymbols(value_inside_ind.get(), value_inside_int.get(), coinchosen.get()))
+    button1.pack()
+    button2.pack()
 
     tkWindow.mainloop()
 
