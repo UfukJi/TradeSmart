@@ -111,7 +111,7 @@ def williams_ad(data, high_col='high', low_col='low', close_col='close'):
     return data
 
 
-def s_slow(data):
+def s_slow(data,x=int):
     i = 0
     j = 0
 
@@ -121,8 +121,8 @@ def s_slow(data):
     slow_stochastic = []
     date = []
     for index, row in data.iterrows():
-        high_fourteen = data['high'].rolling(14).max()
-        low_fourteen = data['low'].rolling(14).min()
+        high_fourteen = data['high'].rolling(x).max()
+        low_fourteen = data['low'].rolling(x).min()
         fast_stochastic = (data['close'] - low_fourteen) * 100 / (high_fourteen - low_fourteen)
         slow_stochastic = fast_stochastic.rolling(3).mean()
         data["stochastic slow"] = slow_stochastic

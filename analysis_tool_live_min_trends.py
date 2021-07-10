@@ -367,8 +367,6 @@ def FindTrends(
                             }
                         )
 
-
-
     # Remove redundant trends
     removeTrends = []
     if not df["min"].min() == 0:
@@ -482,9 +480,6 @@ def FindTrends(
     return lines
 
 
-
-
-
 def drawTrendForAllSymbols(Ind_choice, Int_choice):
     exchange = Binance("credentials.txt")
     symbols = exchange.GetTradingSymbols(quoteAssets=["USDT"])
@@ -523,7 +518,7 @@ def drawTrendForAllSymbols(Ind_choice, Int_choice):
             print("process is finished")
 
 
-def drawTrendForSymbols(Ind_choice, Int_choice,coin_choise):
+def drawTrendForSymbols(Ind_choice, Int_choice, coin_choise):
     exchange = Binance("credentials.txt")
     df = exchange.GetSymbolKlines(coin_choise, Int_choice, 500)
     indicator = []
@@ -550,8 +545,51 @@ def drawTrendForSymbols(Ind_choice, Int_choice,coin_choise):
     PlotData(indicator, trends=lines, plot_title=coin_choise + " trends")
 
 
+def drawTrendForAllSslow(Int_choice, x):
+    exchange = Binance("credentials.txt")
+    symbols = exchange.GetTradingSymbols(quoteAssets=["USDT"])
+    i = 0
+
+    print(Int_choice)
+
+    while i < len(symbols):
+        df = exchange.GetSymbolKlines(symbols[i], Int_choice, 500)
+        if x == "7":
+            indicator = Indicators.s_slow(df, 7)
+        elif x == "14":
+            indicator = Indicators.s_slow(df, 14)
+        elif x == "21":
+            indicator = Indicators.s_slow(df, 21)
+        elif x == "28":
+            indicator = Indicators.s_slow(df, 28)
+
+        lines = FindTrends(indicator, distance_factor=0.001, n=3)
+        print(symbols[i])
+        if lines:
+            PlotData(indicator, trends=lines, plot_title=symbols[i] + " trends")
+
+        i += 1
+
+        if i == len(symbols) - 1:
+            print("process is finished")
 
 
+def drawTrendForSslow(Int_choice, coin_choise, x):
+    exchange = Binance("credentials.txt")
+    df = exchange.GetSymbolKlines(coin_choise, Int_choice, 500)
+    if x == "7":
+        indicator = Indicators.s_slow(df, 7)
+    elif x== "14":
+        indicator = Indicators.s_slow(df, 14)
+    elif x == "21":
+        indicator = Indicators.s_slow(df, 21)
+    elif x == "28":
+        indicator = Indicators.s_slow(df, 28)
+
+    lines = FindTrends(indicator, distance_factor=0.001, n=3)
+    print(coin_choise)
+
+    PlotData(indicator, trends=lines, plot_title=coin_choise + " trends")
 
 
 def stop():
@@ -560,12 +598,14 @@ def stop():
 
 def Main():
     """ """
+
     tkWindow = Tk()
     tkWindow.geometry('400x150')
     tkWindow.title('V1')
 
-    ind_options_list = ["ACC", "OBV", "PVI", "RSI", "S-SLOW", "WAD", "VPT","IMI"]
+    ind_options_list = ["ACC", "OBV", "PVI", "RSI", "S-SLOW", "WAD", "VPT", "IMI"]
     int_options_list = ["1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "8h", "12h", "1d", "3d", "1w", "1M"]
+    sslow_list = ["7", "14", "21", "28"]
     symbol = Indicators.exchange.GetTradingSymbols(quoteAssets=["USDT"])
 
     n = tkinter.StringVar()
@@ -574,11 +614,9 @@ def Main():
     # Adding combobox drop down list
     coinchosen['values'] = symbol
 
-
     coinchosen.current()
 
     coinchosen.pack()
-
 
     value_inside_ind = tkinter.StringVar(tkWindow)
     value_inside_ind.set("Select an Indicator")
@@ -590,14 +628,44 @@ def Main():
     question_menu = tkinter.OptionMenu(tkWindow, value_inside_int, *int_options_list)
     question_menu.pack()
 
-    button1 = Button(tkWindow,
-                    text='Submit all Symbols',
-                    command=lambda: drawTrendForAllSymbols(value_inside_ind.get(), value_inside_int.get()))
-    button2 = Button(tkWindow,
-                    text='Submit Symbol',
-                    command=lambda: drawTrendForSymbols(value_inside_ind.get(), value_inside_int.get(), coinchosen.get()))
-    button1.pack()
-    button2.pack()
+    def check(*args):
+        if not value_inside_ind.get() == 'S-SLOW':
+            button1 = Button(tkWindow,
+                             text='Submit all Symbol',
+                             command=lambda: drawTrendForAllSymbols(value_inside_ind.get(), value_inside_int.get()))
+            button2 = Button(tkWindow,
+                             text='Submit Symbol',
+                             command=lambda: drawTrendForSymbols(value_inside_ind.get(), value_inside_int.get(),
+                                                                 coinchosen.get()))
+            button1.pack()
+            button2.pack()
+
+
+
+
+        else:
+            sslow = tkinter.StringVar(tkWindow)
+            sslow.set("Select an Interval for S-Slow")
+
+            question_menu = tkinter.OptionMenu(tkWindow, sslow, *sslow_list)
+            question_menu.pack()
+
+            button3 = Button(tkWindow,
+                             text='Submit all Symbols for S-slow',
+                             command=lambda: drawTrendForAllSslow(value_inside_int.get(), sslow.get()))
+            button4 = Button(tkWindow,
+                             text='Submit Symbol for S-slow',
+                             command=lambda: drawTrendForSslow(value_inside_int.get(),
+                                                               coinchosen.get(), x = sslow.get()))
+            button3.pack()
+            button4.pack()
+
+
+
+    value_inside_ind.trace(
+        'w',  # 'w' checks when a variable is written (aka changed)
+        check  # this is the function it should call when the variable is changed
+    )
 
     tkWindow.mainloop()
 
