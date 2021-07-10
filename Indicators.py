@@ -3,6 +3,17 @@ from tti.indicators import RelativeMomentumIndex
 import pandas as pd
 from Binance import Binance
 import jhtalib
+from pandas_ta import qqe
+
+
+def QQE(df):
+    dfclose = df["close"]
+    a = qqe(dfclose)
+    b = pd.DataFrame(a["QQE_14_5_4.236"])
+    b.rename(columns={'QQE_14_5_4.236': 'close'}, inplace=True)
+    b["time"] = df["time"]
+    b["date"] = df["date"]
+    return b
 
 def imi(data):
     data = pd.DataFrame(jhtalib.IMI(df, open="open", close="close"), columns=["close"])

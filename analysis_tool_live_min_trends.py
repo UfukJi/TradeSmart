@@ -506,6 +506,8 @@ def drawTrendForAllSymbols(Ind_choice, Int_choice):
             indicator = Indicators.williams_ad(df)
         elif Ind_choice == "VPT":
             indicator = Indicators.volume_price_trend(df)
+        elif Ind_choice == "QQE":
+            indicator = Indicators.QQE(df)
 
         lines = FindTrends(indicator, distance_factor=0.001, n=3)
         print(symbols[i])
@@ -538,6 +540,8 @@ def drawTrendForSymbols(Ind_choice, Int_choice, coin_choise):
         indicator = Indicators.williams_ad(df)
     elif Ind_choice == "VPT":
         indicator = Indicators.volume_price_trend(df)
+    elif Ind_choice == "QQE":
+        indicator = Indicators.QQE(df)
 
     lines = FindTrends(indicator, distance_factor=0.001, n=3)
     print(coin_choise)
@@ -603,7 +607,7 @@ def Main():
     tkWindow.geometry('400x150')
     tkWindow.title('V1')
 
-    ind_options_list = ["ACC", "OBV", "PVI", "RSI", "S-SLOW", "WAD", "VPT", "IMI"]
+    ind_options_list = ["ACC", "OBV", "PVI", "RSI", "S-SLOW", "WAD", "VPT", "IMI","QQE"]
     int_options_list = ["1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "8h", "12h", "1d", "3d", "1w", "1M"]
     sslow_list = ["7", "14", "21", "28"]
     symbol = Indicators.exchange.GetTradingSymbols(quoteAssets=["USDT"])
