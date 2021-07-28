@@ -6,21 +6,46 @@ import jhtalib
 from pandas_ta import qqe
 
 
-def QQE(df):
+def QQE(df,n):
     dfclose = df["close"]
-    a = qqe(dfclose)
+    a = qqe(dfclose,length = n)
     b = pd.DataFrame(a["QQE_14_5_4.236"])
     b.rename(columns={'QQE_14_5_4.236': 'close'}, inplace=True)
     b["time"] = df["time"]
     b["date"] = df["date"]
     return b
 
-def imi(data):
-    data = pd.DataFrame(jhtalib.IMI(df, open="open", close="close"), columns=["close"])
-    data["time"] = df["time"]
-    data["date"] = df["date"]
-    return data
 
+def imi(df, n):
+    IMI = []
+    count = df.shape[0]
+    i=0
+    j=0
+    i: int
+    for i in range(count - n):
+        Gains = []
+        Loses = []
+
+        for j in range(i,n+i,1):
+            if df["close"][j] > df["open"][j]:
+                gain = df["close"][j] - df["open"][j]
+                Gains.append(gain)
+            elif df["open"][j] > df["close"][j]:
+                loss = df["open"][j] - df["close"][j]
+                Loses.append(loss)
+            j=+1
+        g = sum(Gains)
+        l = sum(Loses)
+
+        imi = (g / (g + l)) * 100
+
+        IMI.append(imi)
+        i=+1
+    imidf = pd.DataFrame(IMI, columns = ["close"])
+    imidf["time"] = df["time"]
+    imidf["date"] = df["date"]
+
+    return imidf
 
 def on_balance_volume(data, trend_periods=21, close_col='close', vol_col='volume'):
     for index, row in data.iterrows():

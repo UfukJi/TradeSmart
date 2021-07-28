@@ -596,6 +596,98 @@ def drawTrendForSslow(Int_choice, coin_choise, x):
     PlotData(indicator, trends=lines, plot_title=coin_choise + " trends")
 
 
+def drawTrendForAllIMI(Int_choice, x):
+    exchange = Binance("credentials.txt")
+    symbols = exchange.GetTradingSymbols(quoteAssets=["USDT"])
+    i = 0
+
+    print(Int_choice)
+
+    while i < len(symbols):
+        df = exchange.GetSymbolKlines(symbols[i], Int_choice, 500)
+        if x == "7":
+            indicator = Indicators.imi(df, 7)
+        elif x == "14":
+            indicator = Indicators.imi(df, 14)
+        elif x == "21":
+            indicator = Indicators.imi(df, 21)
+        elif x == "28":
+            indicator = Indicators.imi(df, 28)
+
+        lines = FindTrends(indicator, distance_factor=0.001, n=3)
+        print(symbols[i])
+        if lines:
+            PlotData(indicator, trends=lines, plot_title=symbols[i] + " trends")
+
+        i += 1
+
+        if i == len(symbols) - 1:
+            print("process is finished")
+
+
+def drawTrendForIMI(Int_choice, coin_choise, x):
+    exchange = Binance("credentials.txt")
+    df = exchange.GetSymbolKlines(coin_choise, Int_choice, 500)
+    if x == "7":
+        indicator = Indicators.imi(df, 7)
+    elif x == "14":
+        indicator = Indicators.imi(df, 14)
+    elif x == "21":
+        indicator = Indicators.imi(df, 21)
+    elif x == "28":
+        indicator = Indicators.imi(df, 28)
+
+    lines = FindTrends(indicator, distance_factor=0.001, n=3)
+    print(coin_choise)
+
+    PlotData(indicator, trends=lines, plot_title=coin_choise + " trends")
+
+def drawTrendForAllQQE(Int_choice, x):
+    exchange = Binance("credentials.txt")
+    symbols = exchange.GetTradingSymbols(quoteAssets=["USDT"])
+    i = 0
+
+    print(Int_choice)
+
+    while i < len(symbols):
+        df = exchange.GetSymbolKlines(symbols[i], Int_choice, 500)
+        if x == "7":
+            indicator = Indicators.QQE(df, 7)
+        elif x == "14":
+            indicator = Indicators.QQE(df, 14)
+        elif x == "21":
+            indicator = Indicators.QQE(df, 21)
+        elif x == "28":
+            indicator = Indicators.QQE(df, 28)
+
+        lines = FindTrends(indicator, distance_factor=0.001, n=3)
+        print(symbols[i])
+        if lines:
+            PlotData(indicator, trends=lines, plot_title=symbols[i] + " trends")
+
+        i += 1
+
+        if i == len(symbols) - 1:
+            print("process is finished")
+
+def drawTrendForQQE(Int_choice, coin_choise, x):
+    exchange = Binance("credentials.txt")
+    df = exchange.GetSymbolKlines(coin_choise, Int_choice, 500)
+    if x == "7":
+        indicator = Indicators.QQE(df, 7)
+    elif x == "14":
+        indicator = Indicators.QQE(df, 14)
+    elif x == "21":
+        indicator = Indicators.QQE(df, 21)
+    elif x == "28":
+        indicator = Indicators.QQE(df, 28)
+
+    lines = FindTrends(indicator, distance_factor=0.001, n=3)
+    print(coin_choise)
+
+    PlotData(indicator, trends=lines, plot_title=coin_choise + " trends")
+
+
 def stop():
     stopDrawing = True
 
@@ -604,7 +696,7 @@ def Main():
     """ """
 
     tkWindow = Tk()
-    tkWindow.geometry('400x150')
+    tkWindow.geometry('640x480')
     tkWindow.title('V1')
 
     ind_options_list = ["ACC", "OBV", "PVI", "RSI", "S-SLOW", "WAD", "VPT", "IMI","QQE"]
@@ -633,21 +725,8 @@ def Main():
     question_menu.pack()
 
     def check(*args):
-        if not value_inside_ind.get() == 'S-SLOW':
-            button1 = Button(tkWindow,
-                             text='Submit all Symbol',
-                             command=lambda: drawTrendForAllSymbols(value_inside_ind.get(), value_inside_int.get()))
-            button2 = Button(tkWindow,
-                             text='Submit Symbol',
-                             command=lambda: drawTrendForSymbols(value_inside_ind.get(), value_inside_int.get(),
-                                                                 coinchosen.get()))
-            button1.pack()
-            button2.pack()
 
-
-
-
-        else:
+        if value_inside_ind.get() == 'S-SLOW':
             sslow = tkinter.StringVar(tkWindow)
             sslow.set("Select an Interval for S-Slow")
 
@@ -664,7 +743,50 @@ def Main():
             button3.pack()
             button4.pack()
 
+        elif value_inside_ind.get() == "IMI":
+            imi = tkinter.StringVar(tkWindow)
+            imi.set("Select period for IMI")
 
+            question_menu = tkinter.OptionMenu(tkWindow, imi, *sslow_list)
+            question_menu.pack()
+
+            button3 = Button(tkWindow,
+                             text='Submit all Symbols for IMI',
+                             command=lambda: drawTrendForAllIMI(value_inside_int.get(), imi.get()))
+            button4 = Button(tkWindow,
+                             text='Submit Symbol IMI',
+                             command=lambda: drawTrendForIMI(value_inside_int.get(),
+                                                               coinchosen.get(), x = imi.get()))
+            button3.pack()
+            button4.pack()
+
+        elif value_inside_ind.get() == "QQE":
+            qqe = tkinter.StringVar(tkWindow)
+            qqe.set("Select period for QQE")
+
+            question_menu = tkinter.OptionMenu(tkWindow, qqe, *sslow_list)
+            question_menu.pack()
+
+            button3 = Button(tkWindow,
+                             text='Submit all Symbols for QQE',
+                             command=lambda: drawTrendForAllQQE(value_inside_int.get(), qqe.get()))
+            button4 = Button(tkWindow,
+                             text='Submit Symbol QQE',
+                             command=lambda: drawTrendForQQE(value_inside_int.get(),
+                                                             coinchosen.get(), x=qqe.get()))
+            button3.pack()
+            button4.pack()
+
+        else:
+            button1 = Button(tkWindow,
+                             text='Submit all Symbol',
+                             command=lambda: drawTrendForAllSymbols(value_inside_ind.get(), value_inside_int.get()))
+            button2 = Button(tkWindow,
+                             text='Submit Symbol',
+                             command=lambda: drawTrendForSymbols(value_inside_ind.get(), value_inside_int.get(),
+                                                                 coinchosen.get()))
+            button1.pack()
+            button2.pack()
 
     value_inside_ind.trace(
         'w',  # 'w' checks when a variable is written (aka changed)
