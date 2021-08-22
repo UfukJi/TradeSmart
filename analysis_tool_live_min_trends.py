@@ -30,7 +30,7 @@ def get10Factor(num):
 
 
 def FindTrends(
-        df, n: int = 25, distance_factor: float = 0.1, extend_lines: bool = True
+        df, n: int = 25, distance_factor: float = 0.001, extend_lines: bool = True
 ):
     """
     Finds local extremas & identifies trends using them
@@ -128,7 +128,11 @@ def FindTrends(
                                 # than the first point, the trend has been broken
                                 trendPoints = []
                                 break
-
+                            if p2["min"] < p3["min"]:
+                                # if one value between is larger than the second point
+                                # the trend has been broken
+                                trendPoints = []
+                                break
                             p3min = p3["min"] * 10 ** f
                             p3time = p3["time"] * 10 ** tf
                             point3 = np.asarray((p3time, p3min))
@@ -139,6 +143,11 @@ def FindTrends(
                             v1 = (point2[0] - point1[0], point2[1] - point1[1])
                             v2 = (point3[0] - point1[0], point3[1] - point1[1])
                             xp = v1[0] * v2[1] - v1[1] * v2[0]  # Cross product
+                            alfa = abs((point2[1] - point1[1]) / (point2[0] - point1[0]))
+                            beta = abs((point2[1] - point3[1]) / (point2[0] - point3[0]))
+
+                            if beta > alfa:
+                                trendPoints = []
 
                             if xp < -0.0003 * distance_factor:
                                 trendPoints = []
@@ -156,9 +165,16 @@ def FindTrends(
                                     }
                                 )
                     for i5 in range(i3 + 1, i2):
+                        #checking for a second point between point 1 and 2
+                        #this point is shows 4 point touches
                         if not pd.isna(df.iloc[i5, :]["min"]):
                             p5 = df.iloc[i5, :]
-                            if p5["min"] < p1["min"]:
+                            if p5["min"] < p3["min"]:
+                                # if one value between the two points is smaller
+                                # than the first point, the trend has been broken
+                                trendPoints = []
+                                break
+                            if p2["min"] < p5["min"]:
                                 # if one value between the two points is smaller
                                 # than the first point, the trend has been broken
                                 trendPoints = []
@@ -174,7 +190,11 @@ def FindTrends(
                             v1 = (point2[0] - point1[0], point2[1] - point1[1])
                             v2 = (point5[0] - point1[0], point5[1] - point1[1])
                             xp = v1[0] * v2[1] - v1[1] * v2[0]  # Cross product
+                            alfa = abs((point2[1] - point1[1]) / (point2[0] - point1[0]))
+                            beta = abs((point2[1] - point5[1]) / (point2[0] - point5[0]))
 
+                            if beta > alfa:
+                                trendPoints = []
                             if xp < -0.0003 * distance_factor:
                                 trendPoints = []
                                 break
@@ -191,7 +211,7 @@ def FindTrends(
                                     }
                                 )
 
-                    for i4, p4 in dfMin.iterrows():
+                    for i4, p4 in df.iterrows():
                         if i4 > i2:
                             if p4["min"] < p2["min"]:
                                 trendPoints = []
@@ -230,7 +250,8 @@ def FindTrends(
                         )
 
                 else:
-                    # possible downtrend (starting with p1, with p2 along the way)
+                    continue
+    """"                # possible downtrend (starting with p1, with p2 along the way)
                     trendPoints = []
 
                     # normalize the starting and ending points
@@ -366,7 +387,7 @@ def FindTrends(
                                 "p2_norm": (p2time, p2min),
                             }
                         )
-
+"""
     # Remove redundant trends
     removeTrends = []
     if not df["min"].min() == 0:
@@ -522,7 +543,7 @@ def drawTrendForAllSymbols(Ind_choice, Int_choice):
 
 def drawTrendForSymbols(Ind_choice, Int_choice, coin_choise):
     exchange = Binance("credentials.txt")
-    df = exchange.GetSymbolKlines(coin_choise, Int_choice, 500)
+    df = exchange.GetSymbolKlines(coin_choise, Int_choice, 400)
     indicator = []
     if Ind_choice == "S-SLOW":
         indicator = Indicators.s_slow(df)
@@ -557,7 +578,7 @@ def drawTrendForAllSslow(Int_choice, x):
     print(Int_choice)
 
     while i < len(symbols):
-        df = exchange.GetSymbolKlines(symbols[i], Int_choice, 500)
+        df = exchange.GetSymbolKlines(symbols[i], Int_choice, 400)
         if x == "7":
             indicator = Indicators.s_slow(df, 7)
         elif x == "14":

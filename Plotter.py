@@ -6,6 +6,8 @@ import plotly.graph_objs as go
 from plotly.offline import plot
 
 
+# As you can see, the only thing this class does is plot data, so we will remove all
+# unnecessary elements, and only leave the essential.
 
 def PlotData(df, buy_signals=False, sell_signals=False, plot_title: str = "",
              trends=False,
@@ -13,7 +15,7 @@ def PlotData(df, buy_signals=False, sell_signals=False, plot_title: str = "",
                  dict(col_name="fast_ema", color="indianred", name="FAST EMA"),
                  dict(col_name="50_ema", color="indianred", name="50 EMA"),
                  dict(col_name="200_ema", color="indianred", name="200 EMA")]):
-
+    # plot candlestick chart
     candle = go.Scatter(
         x=df['time'],
         y=df['close'],
@@ -50,7 +52,8 @@ def PlotData(df, buy_signals=False, sell_signals=False, plot_title: str = "",
         )
         data.append(sells)
 
- 
+    # style and display
+    # let's customize our layout a little bit:
     layout = go.Layout(
         title=plot_title,
         xaxis={
